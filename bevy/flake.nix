@@ -42,11 +42,7 @@
               pkg-config
               openssl
             ]
-            ++ linuxDeps
-            ++ lib.optionals stdenv.isDarwin [
-              darwin.apple_sdk.frameworks.Security
-              darwin.apple_sdk.frameworks.SystemConfiguration
-            ];
+            ++ linuxDeps;
 
           env = {
             RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
