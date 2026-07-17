@@ -32,25 +32,24 @@
             gtk3
             libsoup_3
             webkitgtk_4_1
-            libxdo
           ];
 
         # macOS-specific dependencies for Dioxus Desktop
-        darwinDeps = with pkgs.darwin.apple_sdk.frameworks;
-          lib.optionals pkgs.stdenv.isDarwin [
-            Security
-            SystemConfiguration
-            WebKit
-            AppKit
-            CoreGraphics
-            CoreServices
-            Foundation
-          ];
+        darwinDeps = pkgs.lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
+          Security
+          SystemConfiguration
+          WebKit
+          AppKit
+          CoreGraphics
+          CoreServices
+          Foundation
+        ]);
       in {
         devShells.default = pkgs.mkShell {
           # Tools needed at build time
           nativeBuildInputs = with pkgs; [
             pkg-config
+            lld
           ];
 
           buildInputs = with pkgs;
