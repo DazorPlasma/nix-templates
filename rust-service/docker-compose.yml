@@ -1,0 +1,10 @@
+services:
+  api:
+    image: app:release
+    pull_policy: never
+    profiles: ["release"]
+
+  api-debug:
+    image: app:debug
+    pull_policy: never
+    profiles: ["debug"]

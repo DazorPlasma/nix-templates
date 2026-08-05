@@ -17,6 +17,11 @@
         path = ./rust;
         description = "Rust template";
       };
+
+      rust-service = {
+        path = ./rust-service;
+        description = "Rust service with crane, Docker, start/start debug, docs, and full-test";
+      };
     };
   };
 }
