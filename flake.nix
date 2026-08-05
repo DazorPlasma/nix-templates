@@ -22,6 +22,11 @@
         path = ./rust-service;
         description = "Rust service with crane, Docker, start/start debug, docs, and full-test";
       };
+
+      python = {
+        path = ./python;
+        description = "Minimal Python template using Nix buildPythonApplication";
+      };
     };
   };
 }

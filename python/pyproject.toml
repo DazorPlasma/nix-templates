@@ -1,0 +1,16 @@
+[project]
+name = "app"
+version = "0.1.0"
+description = "A pure Nix/Python template"
+authors = [
+    {name = "Author", email = "author@example.com"}
+]
+dependencies = []
+requires-python = ">=3.11"
+
+[project.scripts]
+app = "app.main:main"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
