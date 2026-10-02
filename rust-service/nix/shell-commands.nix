@@ -89,8 +89,13 @@
     trap 'rm -f "$override_file"' EXIT
     ${writeComposeOverride}/bin/app-write-compose-override "$override_file"
 
-    exec ${pkgs.docker}/bin/docker compose --profile "$profile" \
-      -f docker-compose.yml -f "$override_file" up -d
+    if ${pkgs.docker}/bin/docker compose --profile "$profile" \
+      -f docker-compose.yml -f "$override_file" up -d; then
+      compose_status=0
+    else
+      compose_status=$?
+    fi
+    exit "$compose_status"
   '';
 
   stop = pkgs.writeShellScriptBin "stop" ''
@@ -166,16 +171,14 @@
     set -euo pipefail
 
     docker="${pkgs.docker}/bin/docker"
-    nix="${pkgs.nix}/bin/nix"
 
     echo "This will remove:"
-    echo "  - app Docker Compose containers, volumes, networks, and images"
-    echo "  - target/"
-    echo "  - .direnv/app-images/"
-    echo "  - this project's Nix store paths: images, runtime config, Rust build"
-    echo "    outputs and cached cargo dependencies"
+    echo "  - containers, networks, and volumes managed by this Compose project"
+    echo "  - target/ and .direnv/app-images/"
+    echo "  - local Nix result symlinks (result and result-*)"
     echo
-    echo "The next build recompiles all dependencies, which takes a long time."
+    echo "Docker images and Nix store paths are retained because their generic"
+    echo "names and dependencies may be shared with other projects."
     echo
     echo "secrets.json and config.nix are NOT deleted."
     echo
@@ -190,40 +193,9 @@
     "$docker" compose --profile "*" stop >/dev/null 2>&1 || true
     "$docker" compose --profile "*" down -v --remove-orphans >/dev/null 2>&1 || true
 
-    echo "Removing project Docker images..."
-    for image in \
-      app:debug \
-      app:release
-    do
-      "$docker" rmi -f "$image" >/dev/null 2>&1 || true
-    done
-
-    echo "Clearing local caches..."
+    echo "Clearing project-local build caches..."
     rm -rf .direnv/app-images target
     rm -f result result-*
-
-    echo "Deleting Nix store paths for this project (best effort)..."
-
-    project_paths="$(
-      ls -d \
-        /nix/store/*-app* \
-        /nix/store/*-vendor-cargo-deps* \
-        2>/dev/null || true
-    )"
-
-    project_paths="$(printf '%s\n' "$project_paths" | ${pkgs.gnugrep}/bin/grep -v '^[[:space:]]*$' | ${pkgs.coreutils}/bin/sort -u)"
-    total="$(printf '%s\n' "$project_paths" | ${pkgs.coreutils}/bin/wc -l)"
-    echo "  $total named project paths"
-
-    # shellcheck disable=SC2086
-    if [ -n "$project_paths" ]; then
-      "$nix" store delete $project_paths 2>&1 \
-        | ${pkgs.coreutils}/bin/tail -5 \
-        || true
-    fi
-
-    echo "  running nix store gc..."
-    "$nix" store gc 2>&1 | ${pkgs.coreutils}/bin/tail -5 || true
 
     echo "Done."
   '';

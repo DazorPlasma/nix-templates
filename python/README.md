@@ -22,6 +22,6 @@ nix run
 
 ## Adding dependencies
 
-1. Add your dependencies to the `dependencies` list in `flake.nix`
-2. Add your dependencies to `pyproject.toml` (optional but good practice)
-3. Run `direnv reload` or `nix develop`
+1. Add runtime dependencies to the `dependencies` list in `flake.nix`.
+2. For a distributable Python package, declare the same runtime dependencies in `[project].dependencies` in `pyproject.toml`; Nix dependencies define the Nix runtime closure, while `pyproject.toml` supplies package metadata.
+3. Run `direnv reload` or `nix develop`.

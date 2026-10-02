@@ -1,0 +1,3 @@
+[submodule "dylint-nix"]
+	path = dylint-nix
+	url = https://github.com/DazorPlasma/dylint-nix.git

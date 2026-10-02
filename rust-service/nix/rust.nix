@@ -42,7 +42,6 @@
     releaseArgs
     // {
       cargoArtifacts = releaseCargoArtifacts;
-      doCheck = false;
     }
   );
 
@@ -50,9 +49,23 @@
     debugArgs
     // {
       cargoArtifacts = debugCargoArtifacts;
-      doCheck = false;
+    }
+  );
+
+  tests = craneLib.cargoTest (
+    debugArgs
+    // {
+      cargoArtifacts = debugCargoArtifacts;
+    }
+  );
+
+  clippy = craneLib.cargoClippy (
+    debugArgs
+    // {
+      cargoArtifacts = debugCargoArtifacts;
+      cargoClippyExtraArgs = "--all-targets -- --deny warnings";
     }
   );
 in {
-  inherit app app-debug;
+  inherit app app-debug tests clippy;
 }

@@ -27,7 +27,7 @@
 
         # Bevy dependencies (Wayland only, no X11)
         linuxDeps = with pkgs;
-          lib.optionals stdenv.isLinux [
+          lib.optionals stdenv.hostPlatform.isLinux [
             udev
             alsa-lib
             vulkan-loader

@@ -6,9 +6,13 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
+  outputs = {
+    nixpkgs,
+    flake-utils,
+    ...
+  }:
+    flake-utils.lib.eachDefaultSystem (
+      system: let
         pkgs = nixpkgs.legacyPackages.${system};
         pythonPackages = pkgs.python3Packages;
 
@@ -28,24 +32,15 @@
             setuptools
           ];
 
-          dependencies = dependencies;
-
-          # Optional: testing configuration
-          nativeCheckInputs = with pythonPackages; [
-            pytestCheckHook
-          ];
-          
-          # By default we don't have tests, disable to avoid errors
-          doCheck = false;
+          inherit dependencies;
         };
-      in
-      {
+      in {
         packages.default = app;
         packages.app = app;
 
         devShells.default = pkgs.mkShell {
           # Include the application dependencies in the shell
-          inputsFrom = [ app ];
+          inputsFrom = [app];
 
           # Add development-only tools here
           packages = with pkgs; [

@@ -34,9 +34,9 @@ Then open `http://localhost:8080/health` (port from `config.nix`).
 | `logs` / `logs api` / `logs debug api` | Follow logs |
 | `full-test` | Stop stack if running, then `cargo test` |
 | `docs` | Build and open rustdoc (`cargo doc --no-deps --document-private-items --open`) |
-| `purge-all-data` | Wipe local Docker/Nix/build artifacts (asks for confirmation) |
+| `purge-all-data` | Remove this Compose project's containers, networks, and volumes, plus local build outputs (asks for confirmation) |
 
-Flake apps mirror these (`nix run .#start`, `nix run .#docs`, …).
+Flake apps mirror these (`nix run .#start`, `nix run .#docs`, …). `purge-all-data` uses Docker Compose's current project scope and clears only this checkout's `target/`, `.direnv/app-images/`, and `result*` symlinks. It retains Docker image tags and Nix store paths because those names and dependencies can be shared by other projects; it does not run global Nix garbage collection.
 
 ## Configuration and validation
 

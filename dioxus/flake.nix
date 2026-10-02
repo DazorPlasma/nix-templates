@@ -11,7 +11,6 @@
   };
 
   outputs = {
-    self,
     nixpkgs,
     flake-utils,
     rust-overlay,
@@ -27,7 +26,7 @@
 
         # Linux-specific dependencies for Dioxus Desktop (Tauri/Wry underneath)
         linuxDeps = with pkgs;
-          lib.optionals stdenv.isLinux [
+          lib.optionals stdenv.hostPlatform.isLinux [
             glib
             gtk3
             libsoup_3
@@ -35,7 +34,7 @@
           ];
 
         # macOS-specific dependencies for Dioxus Desktop
-        darwinDeps = pkgs.lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
+        darwinDeps = pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
           Security
           SystemConfiguration
           WebKit
@@ -61,18 +60,20 @@
             ++ linuxDeps
             ++ darwinDeps;
 
-          env = {
-            RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
-
-            # Required for Linux Desktop apps to find dynamic libraries at runtime
-            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs;
-              [
-                libGL
-                libxkbcommon
-                wayland
-              ]
-              ++ linuxDeps);
-          };
+          env =
+            {
+              RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
+            }
+            // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+              # Required for Linux Desktop apps to find dynamic libraries at runtime
+              LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs;
+                [
+                  libGL
+                  libxkbcommon
+                  wayland
+                ]
+                ++ linuxDeps);
+            };
         };
       }
     );

@@ -1,10 +1,10 @@
 //! Minimal service stub: loads config + secrets, serves `GET /health`.
 
-use anyhow::{Context, Result, bail};
-use axum::{Json, Router, routing::get};
+use anyhow::{bail, Context, Result};
+use axum::{routing::get, Json, Router};
 use clap::Parser;
 use serde::Deserialize;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::{fs, net::SocketAddr, path::PathBuf};
 use tracing_subscriber::EnvFilter;
 
@@ -98,9 +98,32 @@ mod tests {
         assert_eq!(cfg.logging.filter, "INFO");
     }
 
+    fn temp_secrets_path(name: &str) -> PathBuf {
+        std::env::temp_dir().join(format!("app-secrets-{}-{name}.json", std::process::id()))
+    }
+
     #[test]
     fn rejects_non_object_secrets() {
-        let value = json!(["not", "an", "object"]);
-        assert!(!value.is_object());
+        let path = temp_secrets_path("array");
+        fs::write(&path, r#"["not", "an", "object"]"#)
+            .expect("secrets test file should be written");
+
+        let result = load_secrets(&path);
+        fs::remove_file(&path).expect("secrets test file should be removed");
+        let error = result.expect_err("non-object secrets should be rejected");
+        assert_eq!(error.to_string(), "secrets file must contain a JSON object");
+    }
+
+    #[test]
+    fn loads_object_secrets() {
+        let path = temp_secrets_path("object");
+        fs::write(&path, r#"{"token":"example"}"#).expect("secrets test file should be written");
+
+        let result = load_secrets(&path);
+        fs::remove_file(&path).expect("secrets test file should be removed");
+        assert_eq!(
+            result.expect("object secrets should load"),
+            json!({"token": "example"})
+        );
     }
 }

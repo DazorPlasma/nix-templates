@@ -91,7 +91,7 @@
         };
 
         checks = {
-          inherit (rust) app app-debug;
+          inherit (rust) app app-debug tests clippy;
         };
 
         devShells = {

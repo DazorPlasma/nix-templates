@@ -38,5 +38,6 @@ nix flake show
 | `dioxus` | Dioxus desktop dependencies (Linux / macOS) |
 | `bevy` | Bevy game engine deps (Wayland) |
 | `rust-service` | Crane builds, Docker images, and `start` / `start debug` / `docs` / `full-test` |
+| `python` | Minimal Python application using `buildPythonApplication` |
 
 After scaffolding **`rust-service`**, see that project’s [README](./rust-service/README.md) for configuration, validation, and day-to-day commands.
