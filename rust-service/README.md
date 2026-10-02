@@ -22,7 +22,10 @@ start          # release image + compose profile
 start debug    # debug image (or: start-debug)
 ```
 
-Then open `http://localhost:8080/health` (port from `config.nix`).
+`start` binds the published port to `127.0.0.1` and waits up to 60 seconds for
+the selected service's `/health` endpoint to respond successfully. Then open
+`http://localhost:8080/health` (port from `config.nix`).
+The server finishes in-flight requests when it receives Ctrl+C or SIGTERM.
 
 ## Commands
 
@@ -34,9 +37,15 @@ Then open `http://localhost:8080/health` (port from `config.nix`).
 | `logs` / `logs api` / `logs debug api` | Follow logs |
 | `full-test` | Stop stack if running, then `cargo test` |
 | `docs` | Build and open rustdoc (`cargo doc --no-deps --document-private-items --open`) |
-| `purge-all-data` | Remove this Compose project's containers, networks, and volumes, plus local build outputs (asks for confirmation) |
 
-Flake apps mirror these (`nix run .#start`, `nix run .#docs`, …). `purge-all-data` uses Docker Compose's current project scope and clears only this checkout's `target/`, `.direnv/app-images/`, and `result*` symlinks. It retains Docker image tags and Nix store paths because those names and dependencies can be shared by other projects; it does not run global Nix garbage collection.
+Flake apps mirror these (`nix run .#start`, and so on). The `full-test` and
+`docs` apps include the pinned Rust toolchain and build inputs, so they also
+work outside `nix develop`:
+
+```bash
+nix run .#full-test
+nix run .#docs
+```
 
 ## Configuration and validation
 
@@ -71,7 +80,12 @@ Example validation failure:
 # → error: config.server.apiPort: expected an integer port in 1..65535, got 99999
 ```
 
-Secrets stay in `secrets.json` (copy from `secrets.json.sample`). `start` only requires the file to exist; mount path in the container is `/run/secrets/app.json`.
+Secrets stay in `secrets.json` (copy from `secrets.json.sample`) and are mounted
+read-only at `/run/secrets/app.json`. `start` runs the container with the
+invoking user's numeric UID/GID so a private secrets file remains readable
+without relaxing its permissions. Run `start` as a non-root user and make sure
+that user can read `secrets.json`. The image itself defaults to UID/GID
+`1000:1000` for direct container runs.
 
 ## Rename `app` → your project
 

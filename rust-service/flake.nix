@@ -45,11 +45,11 @@
         };
 
         shellCommands = import ./nix/shell-commands.nix {
-          inherit pkgs;
+          inherit pkgs rustToolchain;
           inherit (appConfig.server) apiPort;
         };
 
-        inherit (shellCommands) loadImages start start-debug stop full-test logs logs-api logs-debug-api purge-all-data docs;
+        inherit (shellCommands) loadImages start start-debug stop full-test logs logs-api logs-debug-api docs;
 
         ciPackages = with pkgs; [
           rustToolchain
@@ -86,12 +86,11 @@
           logs = mkApp logs "Follow logs for all services";
           logs-api = mkApp logs-api "Follow logs for the release API";
           logs-debug-api = mkApp logs-debug-api "Follow logs for the debug API";
-          purge-all-data = mkApp purge-all-data "Remove Docker, Nix, and local build artifacts";
           docs = mkApp docs "Build and open rustdoc";
         };
 
         checks = {
-          inherit (rust) app app-debug tests clippy;
+          inherit (rust) app app-debug tests clippy fmt;
         };
 
         devShells = {
@@ -110,7 +109,6 @@
                 logs
                 logs-api
                 logs-debug-api
-                purge-all-data
                 docs
               ]);
 

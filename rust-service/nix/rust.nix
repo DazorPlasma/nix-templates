@@ -66,6 +66,10 @@
       cargoClippyExtraArgs = "--all-targets -- --deny warnings";
     }
   );
+
+  fmt = craneLib.cargoFmt {
+    src = cargoSrc;
+  };
 in {
-  inherit app app-debug tests clippy;
+  inherit app app-debug tests clippy fmt;
 }
